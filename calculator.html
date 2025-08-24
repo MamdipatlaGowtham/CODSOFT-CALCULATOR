@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Advanced Calculator</title>
+<style>
+    :root {
+        --bg: #f0f0f0;
+        --text: #000;
+        --btn-bg: #fff;
+        --btn-hover: #dcdcdc;
+    }
+    body.dark {
+        --bg: #1e1e1e;
+        --text: #fff;
+        --btn-bg: #333;
+        --btn-hover: #444;
+    }
+    body {
+        background: var(--bg);
+        color: var(--text);
+        font-family: Arial, sans-serif;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        margin: 0;
+        transition: background 0.3s, color 0.3s;
+    }
+    .calculator {
+        width: 320px;
+        background: var(--btn-bg);
+        border-radius: 15px;
+        padding: 20px;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+    }
+    .display {
+        background: var(--bg);
+        color: var(--text);
+        padding: 15px;
+        font-size: 2em;
+        text-align: right;
+        border-radius: 10px;
+        margin-bottom: 15px;
+        overflow-x: auto;
+    }
+    .buttons {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 10px;
+    }
+    button {
+        padding: 15px;
+        font-size: 1.2em;
+        border: none;
+        border-radius: 10px;
+        cursor: pointer;
+        background: var(--btn-bg);
+        color: var(--text);
+        transition: background 0.2s, transform 0.1s;
+    }
+    button:hover {
+        background: var(--btn-hover);
+    }
+    button:active {
+        transform: scale(0.95);
+    }
+    .equal { background: #4CAF50; color: white; }
+    .equal:hover { background: #43A047; }
+    .theme-toggle {
+        text-align: center;
+        margin-bottom: 10px;
+    }
+    .history {
+        background: var(--bg);
+        margin-top: 15px;
+        padding: 10px;
+        font-size: 0.9em;
+        border-radius: 10px;
+        max-height: 80px;
+        overflow-y: auto;
+    }
+    @media(max-width: 400px){
+        .calculator{ width: 90%; }
+        button{ font-size: 1em; padding: 12px; }
+    }
+</style>
+</head>
+<body>
+
+<div class="calculator">
+    <div class="theme-toggle">
+        <button onclick="toggleTheme()">Toggle Theme</button>
+    </div>
+    <div id="display" class="display">0</div>
+    <div class="buttons">
+        <button onclick="appendNumber('7')">7</button>
+        <button onclick="appendNumber('8')">8</button>
+        <button onclick="appendNumber('9')">9</button>
+        <button onclick="chooseOperator('+')">+</button>
+
+        <button onclick="appendNumber('4')">4</button>
+        <button onclick="appendNumber('5')">5</button>
+        <button onclick="appendNumber('6')">6</button>
+        <button onclick="chooseOperator('-')">-</button>
+
+        <button onclick="appendNumber('1')">1</button>
+        <button onclick="appendNumber('2')">2</button>
+        <button onclick="appendNumber('3')">3</button>
+        <button onclick="chooseOperator('*')">&times;</button>
+
+        <button onclick="appendNumber('0')">0</button>
+        <button onclick="appendDot()">.</button>
+        <button onclick="clearDisplay()">C</button>
+        <button onclick="chooseOperator('/')">÷</button>
+
+        <button onclick="calculate()" class="equal">=</button>
+    </div>
+    <div class="history" id="history">History:<br></div>
+</div>
+
+<script>
+    let display = document.getElementById("display");
+    let historyBox = document.getElementById("history");
+    let currentOperand = '';
+    let previousOperand = '';
+    let operator = '';
+    let history = [];
+
+    function appendNumber(num) {
+        currentOperand += num;
+        display.innerText = currentOperand;
+    }
+
+    function appendDot() {
+        if (!currentOperand.includes('.')) {
+            currentOperand += '.';
+            display.innerText = currentOperand;
+        }
+    }
+
+    function chooseOperator(op) {
+        if (currentOperand === '') return;
+        if (previousOperand !== '') calculate();
+        operator = op;
+        previousOperand = currentOperand;
+        currentOperand = '';
+    }
+
+    function calculate() {
+        const prev = parseFloat(previousOperand);
+        const current = parseFloat(currentOperand);
+        if (isNaN(prev) || isNaN(current)) return;
+        let result;
+        switch (operator) {
+            case '+': result = prev + current; break;
+            case '-': result = prev - current; break;
+            case '*': result = prev * current; break;
+            case '/': result = prev / current; break;
+            default: return;
+        }
+        display.innerText = result;
+        history.unshift(`${previousOperand} ${operator} ${currentOperand} = ${result}`);
+        if (history.length > 5) history.pop();
+        historyBox.innerHTML = "History:<br>" + history.join("<br>");
+        currentOperand = result;
+        previousOperand = '';
+        operator = '';
+    }
+
+    function clearDisplay() {
+        currentOperand = '';
+        previousOperand = '';
+        operator = '';
+        display.innerText = '0';
+    }
+
+    function toggleTheme() {
+        document.body.classList.toggle("dark");
+    }
+
+    // Keyboard support
+    document.addEventListener('keydown', (e) => {
+        if (!isNaN(e.key)) appendNumber(e.key);
+        if (['+', '-', '*', '/'].includes(e.key)) chooseOperator(e.key);
+        if (e.key === 'Enter') calculate();
+        if (e.key === 'Backspace') currentOperand = currentOperand.slice(0, -1), display.innerText = currentOperand || '0';
+        if (e.key === '.') appendDot();
+    });
+</script>
+
+</body>
+</html>
